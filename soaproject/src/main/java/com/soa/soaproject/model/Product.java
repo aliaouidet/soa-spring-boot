@@ -57,9 +57,6 @@ public class Product {
     @Column(name = "date_created")
     private LocalDateTime dateCreated;
 
-    // One-to-many relationship with Sale
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
-    private List<Sale> sales;
 
 
 

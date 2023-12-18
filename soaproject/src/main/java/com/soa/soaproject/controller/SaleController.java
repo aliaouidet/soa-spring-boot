@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
 @CrossOrigin("*")
 @RestController
 @RequestMapping("/api/sales")
@@ -25,8 +24,9 @@ public class SaleController {
     private ProductRepository productRepository;
 
     @GetMapping
-    public List<Sale> getAllSales() {
-        return saleRepository.findAll();
+    public ResponseEntity<List<Sale>> getAllSales() {
+        List<Sale> sales = saleRepository.findAll();
+        return new ResponseEntity<>(sales, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
@@ -38,42 +38,54 @@ public class SaleController {
 
     @PostMapping
     public ResponseEntity<Sale> createSale(@RequestBody Sale sale) {
-        // Make sure the associated product exists
-        Product product = productRepository.findById(sale.getProduct().getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + sale.getProduct().getId()));
+        try {
+            // Make sure the associated product exists
+            Product product = productRepository.findById(sale.getProduct().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + sale.getProduct().getId()));
 
-        sale.setProduct(product);
+            sale.setProduct(product);
 
-        Sale createdSale = saleRepository.save(sale);
-        return new ResponseEntity<>(createdSale, HttpStatus.CREATED);
+            Sale createdSale = saleRepository.save(sale);
+            return new ResponseEntity<>(createdSale, HttpStatus.CREATED);
+        } catch (ResourceNotFoundException ex) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Sale> updateSale(@PathVariable long id, @RequestBody Sale saleDetails) {
-        Sale existingSale = saleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Sale not found with id: " + id));
+        try {
+            Sale existingSale = saleRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Sale not found with id: " + id));
 
-        existingSale.setDate(saleDetails.getDate());
-        existingSale.setAmount(saleDetails.getAmount());
+            existingSale.setDate(saleDetails.getDate());
+            existingSale.setAmount(saleDetails.getAmount());
 
-        // Update associated product if saleDetails has a non-null product
-        if (saleDetails.getProduct() != null) {
-            Product product = productRepository.findById(saleDetails.getProduct().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + saleDetails.getProduct().getId()));
+            // Update associated product if saleDetails has a non-null product
+            if (saleDetails.getProduct() != null) {
+                Product product = productRepository.findById(saleDetails.getProduct().getId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + saleDetails.getProduct().getId()));
 
-            existingSale.setProduct(product);
+                existingSale.setProduct(product);
+            }
+
+            Sale updatedSale = saleRepository.save(existingSale);
+            return ResponseEntity.ok(updatedSale);
+        } catch (ResourceNotFoundException ex) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
-        Sale updatedSale = saleRepository.save(existingSale);
-        return ResponseEntity.ok(updatedSale);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<HttpStatus> deleteSale(@PathVariable long id) {
-        Sale sale = saleRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Sale not found with id: " + id));
+        try {
+            Sale sale = saleRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Sale not found with id: " + id));
 
-        saleRepository.delete(sale);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            saleRepository.delete(sale);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (ResourceNotFoundException ex) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 }
