@@ -33,7 +33,4 @@ public class Sale {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-
-    public Sale(LocalDateTime localDateTime, double v, Product product1) {
-    }
 }

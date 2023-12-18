@@ -62,6 +62,5 @@ public class Product {
     private List<Sale> sales;
 
 
-    public Product(String p003, String s, String s1, double v, int i, String inStock, Scategorie scategorie2, String image, Object o, double v1, LocalDateTime now, Object o1) {
-    }
+
 }

@@ -25,6 +25,5 @@ public class Scategorie {
     private String imagescategorie;
 
 
-    public Scategorie(String electronics, String image) {
-    }
+
 }
